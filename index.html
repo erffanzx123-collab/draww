@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cabutan Bertuah Big Family Rafeah &amp; Aziz</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&family=Montserrat:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#f5c542;--gold-lt:#ffe08a;--navy:#081a45;--navy-dk:#040b22}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:20px;padding:28px 16px 40px;font-family:'Montserrat',sans-serif;color:#fff;text-align:center;overflow-x:hidden;
+background:repeating-conic-gradient(from 0deg at 50% 55%,rgba(255,200,60,.10) 0 6deg,rgba(255,200,60,0) 6deg 12deg),radial-gradient(ellipse at 50% 55%,#12307a 0%,var(--navy) 45%,var(--navy-dk) 100%)}
+h1,.names{font-family:'Playfair Display',serif;font-weight:900;margin:0;line-height:1;color:transparent;background:linear-gradient(180deg,#fff6c4,#f5c542 55%,#b27b0c);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 4px 0 #6b4700) drop-shadow(0 10px 14px rgba(0,0,0,.55))}
+h1{font-size:clamp(44px,11vw,112px);letter-spacing:3px}
+.names{font-size:clamp(32px,7vw,72px)}
+.pill{display:inline-block;padding:8px 28px;border:3px solid var(--gold);border-radius:999px;background:rgba(255,255,255,.07);font-weight:800;font-size:clamp(18px,3.4vw,32px);letter-spacing:8px;color:var(--gold-lt)}
+.machine{width:min(560px,100%);padding:26px;border-radius:44px;background:linear-gradient(180deg,#ffe9a0,#f0b429 50%,#9a6a0a);border:4px solid #fff2b0;box-shadow:0 0 50px rgba(255,200,60,.55)}
+.bulbs{border:10px dotted #fff6c8;border-radius:30px;padding:16px;filter:drop-shadow(0 0 4px #fff6c8)}
+.panel{background:#07122e;border:5px solid var(--gold-lt);border-radius:24px;padding:26px 14px}
+#display{background:#fff8e1;border-radius:12px;height:112px;display:flex;align-items:center;justify-content:center;padding:0 10px;overflow:hidden;
+font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(30px,8vw,64px);letter-spacing:4px;color:#c0152f;-webkit-text-stroke:2px #f0b429;white-space:nowrap}
+#display.win{animation:pop .6s ease 3}
+@keyframes pop{50%{transform:scale(1.08);background:#fff2b0}}
+#draw{margin-top:18px;width:100%;padding:16px;border-radius:16px;border:5px solid var(--gold-lt);background:#07122e;color:var(--gold-lt);font:800 clamp(26px,5vw,40px)/1 'Montserrat',sans-serif;letter-spacing:8px;cursor:pointer}
+#draw:hover:not(:disabled){background:#12307a}
+#draw:focus-visible{outline:4px solid #fff;outline-offset:3px}
+#draw:disabled{opacity:.6;cursor:wait}
+.box{width:min(560px,100%);text-align:left;background:rgba(255,255,255,.07);border:2px solid var(--gold);border-radius:16px;padding:14px 18px}
+.box summary{cursor:pointer;font-weight:800;color:var(--gold-lt)}
+textarea{width:100%;min-height:140px;margin-top:10px;border-radius:10px;border:2px solid var(--gold);padding:10px;font:600 16px 'Montserrat',sans-serif;background:#fff8e1;color:#07122e}
+label{display:block;margin-top:10px;font-weight:600}
+ol{margin:8px 0 0;padding-left:22px;color:#fff}
+.cf{position:fixed;top:-20px;width:10px;height:18px;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media (prefers-reduced-motion:reduce){.cf{display:none}#display.win{animation:none}}
+</style>
+</head>
+<body>
+<h1>CABUTAN<br>BERTUAH</h1>
+<div class="pill">BIG FAMILY</div>
+<main class="machine">
+<div class="bulbs">
+<div class="panel">
+<div id="display" aria-live="polite">7 7 7</div>
+</div>
+<button id="draw" type="button">DRAW</button>
+</div>
+</main>
+<div class="names">RAFEAH &amp; AZIZ</div>
+
+<details class="box">
+<summary>Senarai nama</summary>
+<textarea id="list" aria-label="Senarai nama, satu nama setiap baris"></textarea>
+<label><input type="checkbox" id="once" checked> Buang nama pemenang daripada undian seterusnya</label>
+<label><input type="checkbox" id="sound" checked> Bunyi</label>
+</details>
+
+<section class="box" aria-labelledby="wt">
+<strong id="wt">Pemenang</strong>
+<ol id="winners"></ol>
+</section>
+
+<script>
+// Tukar senarai ini atau guna kotak "Senarai nama" di halaman (satu nama setiap baris).
+const DEFAULT_NAMES = ["Nama 1", "Nama 2", "Nama 3", "Nama 4", "Nama 5", "Nama 6"];
+
+const $ = (id) => document.getElementById(id);
+const display = $("display"), btn = $("draw"), list = $("list"), once = $("once"), winners = $("winners");
+
+list.value = (localStorage.getItem("names") || DEFAULT_NAMES.join("\n"));
+list.addEventListener("input", () => localStorage.setItem("names", list.value));
+
+const getNames = () => list.value.split("\n").map((s) => s.trim()).filter(Boolean);
+const rand = (n) => crypto.getRandomValues(new Uint32Array(1))[0] % n;
+
+function confetti() {
+  const colors = ["#ffd24a", "#ff3d81", "#29d3ff", "#ffffff", "#a78bfa", "#ff8a3d"];
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement("span");
+    s.className = "cf";
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.background = colors[rand(colors.length)];
+    s.style.animationDuration = 2 + Math.random() * 2.5 + "s";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 4800);
+  }
+}
+
+// Bunyi dijana terus oleh pelayar (Web Audio), tiada fail audio diperlukan.
+let ac;
+const soundOn = () => $("sound").checked;
+function tone(freq, start, dur, type, vol) {
+  const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + start;
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g).connect(ac.destination);
+  o.start(t);
+  o.stop(t + dur + 0.05);
+}
+function tick() {
+  if (ac && soundOn()) tone(700 + rand(500), 0, 0.05, "square", 0.06);
+}
+function fanfare() {
+  if (!ac || !soundOn()) return;
+  [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i * 0.14, 0.4, "triangle", 0.2));
+  [1046.5, 1318.5, 1567.98].forEach((f) => tone(f, 0.6, 1.4, "triangle", 0.16));
+  for (let i = 0; i < 10; i++) tone(1800 + rand(1500), 0.7 + i * 0.08, 0.15, "sine", 0.05);
+}
+
+btn.addEventListener("click", () => {
+  ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === "suspended") ac.resume();
+  const names = getNames();
+  if (names.length === 0) { display.textContent = "TIADA NAMA"; return; }
+  const winner = names[rand(names.length)];
+  btn.disabled = true;
+  display.classList.remove("win");
+  let delay = 50, elapsed = 0;
+  (function tick() {
+    if (elapsed > 6500 && delay > 260) {
+      display.textContent = winner;
+      display.classList.add("win");
+      const li = document.createElement("li");
+      li.textContent = winner;
+      winners.appendChild(li);
+      if (once.checked) {
+        const rest = names.slice();
+        rest.splice(rest.indexOf(winner), 1);
+        list.value = rest.join("\n");
+        localStorage.setItem("names", list.value);
+      }
+      confetti();
+      fanfare();
+      btn.disabled = false;
+      return;
+    }
+    display.textContent = names[rand(names.length)];
+    tick();
+    elapsed += delay;
+    if (elapsed > 4500) delay *= 1.18;
+    setTimeout(tick, delay);
+  })();
+});
+</script>
+</body>
+</html>
